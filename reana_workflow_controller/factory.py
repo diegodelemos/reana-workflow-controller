@@ -31,7 +31,7 @@ from .multiorganization import MultiOrganizationSQLAlchemy
 # Initialize DB
 db = MultiOrganizationSQLAlchemy()
 
-from .models import User  # isort:skip  # noqa
+from .models import User, Workflow, Base  # isort:skip  # noqa
 
 
 def create_app():
@@ -46,6 +46,7 @@ def create_app():
     from .rest import restapi_blueprint  # noqa
     app.register_blueprint(restapi_blueprint, url_prefix='/api')
     with app.app_context():
+        db.register_base(Base)
         db.initialize_dbs()
 
     return app

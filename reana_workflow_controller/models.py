@@ -24,26 +24,53 @@
 
 from __future__ import absolute_import
 
+import enum
+
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String
+# move to factory
+# from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from sqlalchemy_utils.types import UUIDType
 
-from .factory import db
+Base = declarative_base()
 
 
-class User(db.Model):
-    """User model."""
+class User(Base):
+    """User table"""
 
-    id_ = db.Column(UUIDType, primary_key=True)
-    api_key = db.Column(db.String(120))
-    create_date = db.Column(db.DateTime, default=db.func.now())
-    email = db.Column(db.String(255), unique=True)
-    last_active_date = db.Column(db.DateTime)
+    __tablename__ = 'user'
 
-    def __init__(self, id_, email, api_key):
-        """Initialize user model."""
-        self.id_ = id_
-        self.email = email
-        self.api_key = api_key
+    id_ = Column(UUIDType, primary_key=True)
+    api_key = Column(String(length=120))
+    create_date = Column(DateTime, default=func.now)
+    email = Column(String(length=255))
+    last_active_date = Column(DateTime, default=func.now)
+    workflows = relationship("workflows", backref="user")
 
     def __repr__(self):
         """User string represetantion."""
         return '<User %r>' % self.id_
+
+
+class WorkflowStatus(enum.Enum):
+    running = 1
+    finished = 2
+    failed = 3
+
+
+class Workflow(Base):
+    """Workflow table."""
+
+    __tablename__ = 'workflow'
+
+    id_ = Column(UUIDType, primary_key=True)
+    create_date = Column(DateTime, default=func.now)
+    workspace_path = Column(String(255))
+    status = Column(Enum(WorkflowStatus))
+    owner_id = Column(UUIDType, ForeignKey('user.id_'))
+
+    def __repr__(self):
+        """Workflow string represetantion."""
+        return '<Workflow %r>' % self.id_
