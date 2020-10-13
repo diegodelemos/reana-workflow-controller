@@ -30,7 +30,9 @@ install:
   - travis_retry pip install -e .[all]
 
 script:
-  - ./run-tests.sh
+  - pip install git+https://github.com/diegodelemos/pytest-reana@rc-217/configurable-shared-volume-path#egg=pytest_reana --force-reinstall # FIXME
+  - mkdir $HOME/reana
+  - SHARED_VOLUME_PATH=$HOME/reana ./run-tests.sh
 
 after_success:
   - coveralls
